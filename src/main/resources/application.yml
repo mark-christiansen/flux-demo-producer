@@ -1,0 +1,29 @@
+# Application specific properties
+application:
+  producer:
+    client.id: flux-demo-producer
+    acks: all
+    key.serializer: org.apache.kafka.common.serialization.StringSerializer
+    value.serializer: org.apache.kafka.common.serialization.StringSerializer
+    batch.size: 100
+    bootstrap.servers: ${BROKER_URL}
+    security.protocol: SASL_SSL
+    sasl.mechanism: PLAIN
+    ssl.endpoint.identification.algorithm: https
+    sasl.jaas.config: ${BROKER_AUTH}
+  topics:
+    - topic: source-topic-0
+      iterations: ${ITERATIONS}
+      frequency: ${FREQUENCY}
+      batch: ${BATCH_SIZE}
+      type: chuckNorris
+    - topic: source-topic-1
+      iterations: ${ITERATIONS}
+      frequency: ${FREQUENCY}
+      batch: ${BATCH_SIZE}
+      type: animal
+    - topic: source-topic-2
+      iterations: ${ITERATIONS}
+      frequency: ${FREQUENCY}
+      batch: ${BATCH_SIZE}
+      type: backToTheFuture

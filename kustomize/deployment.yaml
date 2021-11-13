@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flux-demo-producer
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: flux-demo-producer
+  template:
+    metadata:
+      labels:
+        app: flux-demo-producer
+    spec:
+      containers:
+      - name: flux-demo-producer
+        image: machrist/flux-demo-producer:0.0.1
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: BROKER_URL
+          value: pkc-ymrq7.us-east-2.aws.confluent.cloud:9092
+        - name: BROKER_AUTH
+          valueFrom:
+            secretKeyRef:
+              name: cc.api-key.flux-demo-producer.lkc-1pgrz
+              key: ccloud-api-key
+        - name: ITERATIONS
+          value: 1
+        - name: BATCH
+          value: 10
+        - name: FREQUENCY
+          value: 5000
+        resources:
+          limits:  
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi

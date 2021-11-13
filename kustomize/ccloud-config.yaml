@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flux-demo-producer-configs
+  labels:
+    destination: ccloud
+data:
+  service-accounts: |
+    [
+      { 
+        "name": "flux-demo-producer",
+        "description": "Service account for Flux Demo Producer"
+      }
+    ]
+  environments: |
+    [
+      {
+        "name": "default",
+        "kafka": [
+          {
+            "name": "devops-demo",
+            "cloud": "aws",
+            "region": "us-east-2",
+            "topic": [
+              { "name": "source-topic-0", "partitions": 1 },
+              { "name": "source-topic-1", "partitions": 1 },
+              { "name": "source-topic-2", "partitions": 1 }
+            ],
+            "acl": [
+              {
+                "service-account": "flux-demo-producer",
+                "controls": [
+                  { "operation" : "create,write", "permission": "allow", "resource": "topic", "name": "source-topic-0" },
+                  { "operation" : "create,write", "permission": "allow", "resource": "topic", "name": "source-topic-1" },
+                  { "operation" : "create,write", "permission": "allow", "resource": "topic", "name": "source-topic-2" }
+                ]
+              }
+            ],
+            "api-key": [
+              { "service-account": "flux-demo-producer" }
+            ]
+          }
+        ]
+      }
+    ]

@@ -1,2 +1,2 @@
 # flux-demo-producer
-Flux Demo Kafka Producer
+Flux Demo Java Kafka Producer
