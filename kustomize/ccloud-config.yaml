@@ -30,9 +30,9 @@ data:
               {
                 "service-account": "flux-demo-producer",
                 "controls": [
-                  { "operation" : "create,write,describe", "permission": "allow", "resource": "topic", "name": "source-topic-0" },
-                  { "operation" : "create,write,describe", "permission": "allow", "resource": "topic", "name": "source-topic-1" },
-                  { "operation" : "create,write,describe", "permission": "allow", "resource": "topic", "name": "source-topic-2" }
+                  { "operation" : "write", "permission": "allow", "resource": "topic", "name": "source-topic-0" },
+                  { "operation" : "write", "permission": "allow", "resource": "topic", "name": "source-topic-1" },
+                  { "operation" : "write", "permission": "allow", "resource": "topic", "name": "source-topic-2" }
                 ]
               }
             ],
