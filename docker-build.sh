@@ -1,2 +1,5 @@
 #!/bin/bash
-docker build . -t machrist/flux-demo-producer:0.0.1
+IMAGE="machrist/flux-demo-producer"
+VERSION="0.0.1"
+docker build . -t $IMAGE:$VERSION
+kind load docker-image $IMAGE:$VERSION
