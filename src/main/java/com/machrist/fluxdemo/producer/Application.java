@@ -36,10 +36,10 @@ public class Application implements CommandLineRunner {
             for (Config.ProducerTopic topic : config.getTopics()) {
                 log.info("producing to topic {}", topic.getTopic());
                 for (int i = 0; i < topic.getIterations(); i++) {
-                    for (ProducerRecord<String, String> record : getRecords(topic.getBatch(), topic.getType())) {
+                    for (ProducerRecord<String, String> record : getRecords(topic.getTopic(), topic.getBatch(), topic.getType())) {
                         producer.send(record, (m, e) -> {
                             if (e != null) {
-                                e.printStackTrace();
+                                log.error("Error producing record", e);
                             } else {
                                 log.debug("Produced record to topic {} partition [{}] @ offset {}/n", m.topic(), m.partition(), m.offset());
                             }
@@ -56,7 +56,7 @@ public class Application implements CommandLineRunner {
         }
     }
 
-    private List<ProducerRecord<String, String>> getRecords(int batchSize, String type) {
+    private List<ProducerRecord<String, String>> getRecords(String topic, int batchSize, String type) {
 
         List<ProducerRecord<String, String>> list = new ArrayList<>(batchSize);
         for (int i = 0; i < batchSize; i++) {
@@ -67,16 +67,19 @@ public class Application implements CommandLineRunner {
                 case "chuckNorris":
                     //noinspection UnusedAssignment
                     value = faker.chuckNorris().fact();
+                    break;
                 case "animal":
                     //noinspection UnusedAssignment
                     value = faker.animal().name();
+                    break;
                 case "backToTheFuture":
                     //noinspection UnusedAssignment
                     value = faker.backToTheFuture().quote();
+                    break;
                 default:
                     value = faker.ancient().titan();
             }
-            list.add(new ProducerRecord<>(key, value));
+            list.add(new ProducerRecord<>(topic, key, value));
         }
         return list;
     }

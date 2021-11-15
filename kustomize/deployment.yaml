@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: flux-demo-producer
-  namespace: default
+  namespace: flux-demo
 spec:
   selector:
     matchLabels:

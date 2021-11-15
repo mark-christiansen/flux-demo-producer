@@ -41,6 +41,10 @@ public class Config {
 
     public KafkaProducer<String, String> getKafkaProducer() throws JsonProcessingException {
         setSaslJaasConfig();
+        log.info("Kafka Producer Properties:");
+        for(Map.Entry<Object, Object> entry : producer.entrySet()) {
+            log.info("{}: {}", entry.getKey(), entry.getValue());
+        }
         return new KafkaProducer<>(producer);
     }
 
@@ -98,7 +102,7 @@ public class Config {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode node = mapper.readTree(producer.getProperty("sasl.jaas.config"));
         producer.setProperty("sasl.jaas.config",
-                format("org.apache.kafka.common.security.plain.PlainLoginModule required username=\"%s\" password=\"%s\";",
+                format("org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';",
                         node.get("key").asText(), node.get("secret").asText()));
     }
 
