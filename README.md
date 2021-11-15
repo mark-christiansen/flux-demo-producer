@@ -24,7 +24,6 @@ Counfluent Cloud resources to be automatically deployed.
 1) Create a cluster in Kubernetes: `kind create cluster`
 2) Create namespaces
 * `kubectl create ns flux-system`
-* `kubectl create ns flux-demo`
 
 ### Setup Flux and flux-demo Repos
 
@@ -108,8 +107,7 @@ Counfluent Cloud resources to be automatically deployed.
 
 1) Run Maven build for `flux-demo-producer` application, create Docker image and deploy into `kind-control-plane`
 * `<repo-home>/mvn package`
-* `<repo-home>/docker-build.sh`
-* `kind load docker-image machrist/flux-demo-producer:0.0.1`
+* `<repo-home>/docker-build.sh` (loads to `kind-control-plane` as well)
 
 ### Bootstrap flux-demo-producer repo to flux-demo-infra repo
 
@@ -122,8 +120,32 @@ Counfluent Cloud resources to be automatically deployed.
 * Confluent Cloud will eventually charge you if you were to leave the producer run over a long period of time. Running it for a small amount of messages (< 1000), will not cost you anything. Check [Billing/Payment](https://confluent.cloud/settings/billing/invoice) in Confluent Cloud to see if there are charges being applied.
 2) Create flux source for your flux-demo-producer in your flux-demo-infra repo
 * `cd <repo-home>/flux-demo-infra`
-* `flux create source git flux-demo-producer -n flux-demo --url https://github.com/<github-username>/flux-demo-producer --branch main --interval 30s --export > ./cluster/my-cluster/flex-demo-producer-source.yaml`
-* `flux create kustomization flux-demo-producer --target-namespace=flux-demo --source=flux-demo-producer --path="./kustomize" --prune=true --interval=5m --export > /cluster/my-cluster/flex-demo-producer-kustomization.yaml`
+* `flux create source git flux-demo-producer -n flux-system --url https://github.com/<github-username>/flux-demo-producer --branch main --interval 30s --export > ./clusters/my-cluster/flex-demo-producer-source.yaml`
+* `flux create kustomization flux-demo-producer --target-namespace=flux-demo --source=flux-demo-producer --path="./kustomize" --prune=true --interval=5m --export > /clusters/my-cluster/flex-demo-producer-kustomization.yaml`
+3) Commit and push changes to `flux-demo-infra` repo
+* `git add . && git commit -m "bootstrap flux-demo-producer" && git push`
+4) Verify `gitrepo` for `flux-demo-producer` created in `flux-system` namespace
+* ```
+  % kubectl get gitrepo -n flux-system
+    NAME                        URL                                                              READY   STATUS                                                            AGE
+    flux-demo-ccloud-operator   https://github.com/mark-christiansen/flux-demo-ccloud-operator   True    Fetched revision: main/418eaaea0f7056fbb428b66f7b5faad3ef34f5bd   27m
+    flux-demo-producer          https://github.com/mark-christiansen/flux-demo-producer          True    Fetched revision: main/0ca6156bc8489b69a9206afbb61fb5b5e65e1b65   27s
+    flux-system                 https://github.com/mark-christiansen/flux-demo-infra.git         True    Fetched revision: main/e74e798ae5325b6ae1b77140acca130b4dd187ea   74m
+  ```
+5) Verify `kustomization` for `flux-demo-ccloud-operator` created
+* ```
+  % flux get kustomizations --watch
+    NAME       	                READY	MESSAGE                                                        	REVISION                                     	SUSPENDED
+    flux-system	                True 	Applied revision: main/d59ad0ede4a7aaf05926c71880c18556f44a16bf	main/d59ad0ede4a7aaf05926c71880c18556f44a16bf	False
+    flux-demo-ccloud-operator	True	Applied revision: main/108c1cbfa7534989de7cced40cc320e4ecdae34e	main/108c1cbfa7534989de7cced40cc320e4ecdae34e	False
+    flux-demo-producer	        True	Applied revision: main/0ca6156bc8489b69a9206afbb61fb5b5e65e1b65	main/0ca6156bc8489b69a9206afbb61fb5b5e65e1b65	False
+  ```
+6) Verify `flux-demo-ccloud-operator` pod running
+* ```
+  % flux-demo-infra % kubectl -n flux-demo get pod
+    NAME                               READY   STATUS    RESTARTS   AGE
+    ccloud-operator-5b9778c577-x7967   1/1     Running   0          5m39s
+  ```
 
 ### Push flux-demo-infra Repo Changes
 
