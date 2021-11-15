@@ -52,8 +52,7 @@ Counfluent Cloud resources to be automatically deployed.
 6) Bootstrap flux components in flux-system namespace to the flux-demo-infra repo
 * `cd <repo-home>/flux-demo-infra`
 * `rm -rf clusters`
-* `git commit -am 'deleting to bootstrap'`
-* `git push`
+* `git add . && git commit -m 'deleting to bootstrap' && git push`
 * `flux bootstrap github -n flux-system --owner $GITHUB_USER --repository flux-demo-infra --branch main --path ./clusters/my-cluster --token-auth --personal`
 * `git pull`
 7) Verify there are no errors in the `flux-system` kustomizations
@@ -75,30 +74,30 @@ Counfluent Cloud resources to be automatically deployed.
   CCLOUD_EMAIL=ccloud-email
   CCLOUD_PASSWORD=ccloud-password
   ```
-* `kubectl create secret generic cc.ccloud-secrets -n flux-demo --from-env-file=ccloud-secret.yml`
+* `kubectl create secret generic cc.ccloud-secrets --from-env-file=ccloud-secret.yml -n default`
 2) Create files to link `flux-demo-ccloud-operator` repo to `flux-demo-infra` repo
 * `cd <repo-home>/flux-demo-infra`
-* `flux create source git flux-demo-ccloud-operator -n flux-system --url https://github.com/<github-username>/flux-demo-ccloud-operator --branch main --interval 30s --export > ./clusters/my-cluster/flux-demo-ccloud-operator-source.yaml`
-* `flux create kustomization flux-demo-ccloud-operator --target-namespace=flux-demo --source=flux-demo-ccloud-operator --path="./kustomize" --prune=true --interval=5m --export > ./clusters/my-cluster/flux-demo-ccloud-operator-kustomization.yaml`
+* `flux create source git ccloud-operator -n flux-system --url https://github.com/<github-username>/flux-demo-ccloud-operator --branch main --interval 30s --export > ./clusters/my-cluster/flux-demo-ccloud-operator-source.yaml`
+* `flux create kustomization ccloud-operator --target-namespace=default --source=ccloud-operator --path="./kustomize" --prune=true --interval=5m --export > ./clusters/my-cluster/flux-demo-ccloud-operator-kustomization.yaml`
 3) Commit and push changes to `flux-demo-infra` repo
-* `git add . && git commit -m "bootstrap flux-demo-ccloud-operator" && git push`
-4) Verify `gitrepo` for `flux-demo-ccloud-operator` created in `flux-system` namespace
+* `git add . && git commit -m "bootstrap ccloud-operator" && git push`
+4) Verify `gitrepo` for `ccloud-operator` created in `flux-system` namespace
 * ```
   % kubectl get gitrepo -n flux-system
-    NAME                        URL                                                              READY   STATUS                                                            AGE
-    flux-demo-ccloud-operator   https://github.com/mark-christiansen/flux-demo-ccloud-operator   True    Fetched revision: main/108c1cbfa7534989de7cced40cc320e4ecdae34e   1s
-    flux-system                 https://github.com/mark-christiansen/flux-demo-infra.git         True    Fetched revision: main/d59ad0ede4a7aaf05926c71880c18556f44a16bf   47m
+    NAME                URL                                                              READY   STATUS                                                            AGE
+    ccloud-operator     https://github.com/mark-christiansen/flux-demo-ccloud-operator   True    Fetched revision: main/108c1cbfa7534989de7cced40cc320e4ecdae34e   1s
+    flux-system         https://github.com/mark-christiansen/flux-demo-infra.git         True    Fetched revision: main/d59ad0ede4a7aaf05926c71880c18556f44a16bf   47m
   ```
-5) Verify `kustomization` for `flux-demo-ccloud-operator` created
+5) Verify `kustomization` for `ccloud-operator` created
 * ```
   % flux get kustomizations --watch
-    NAME       	                READY	MESSAGE                                                        	REVISION                                     	SUSPENDED
-    flux-system	                True 	Applied revision: main/d59ad0ede4a7aaf05926c71880c18556f44a16bf	main/d59ad0ede4a7aaf05926c71880c18556f44a16bf	False
-    flux-demo-ccloud-operator	True	Applied revision: main/108c1cbfa7534989de7cced40cc320e4ecdae34e	main/108c1cbfa7534989de7cced40cc320e4ecdae34e	False
+    NAME       	        READY	MESSAGE                                                        	REVISION                                     	SUSPENDED
+    flux-system	        True 	Applied revision: main/d59ad0ede4a7aaf05926c71880c18556f44a16bf	main/d59ad0ede4a7aaf05926c71880c18556f44a16bf	False
+    ccloud-operator	    True	Applied revision: main/108c1cbfa7534989de7cced40cc320e4ecdae34e	main/108c1cbfa7534989de7cced40cc320e4ecdae34e	False
   ```
 6) Verify `flux-demo-ccloud-operator` pod running
 * ```
-  % flux-demo-infra % kubectl -n flux-demo get pod
+  % flux-demo-infra % kubectl -n default get pod
     NAME                               READY   STATUS    RESTARTS   AGE
     ccloud-operator-5b9778c577-x7967   1/1     Running   0          5m39s
   ```
@@ -121,7 +120,7 @@ Counfluent Cloud resources to be automatically deployed.
 2) Create flux source for your flux-demo-producer in your flux-demo-infra repo
 * `cd <repo-home>/flux-demo-infra`
 * `flux create source git flux-demo-producer -n flux-system --url https://github.com/<github-username>/flux-demo-producer --branch main --interval 30s --export > ./clusters/my-cluster/flex-demo-producer-source.yaml`
-* `flux create kustomization flux-demo-producer --target-namespace=flux-demo --source=flux-demo-producer --path="./kustomize" --prune=true --interval=5m --export > /clusters/my-cluster/flex-demo-producer-kustomization.yaml`
+* `flux create kustomization flux-demo-producer --target-namespace=default --source=flux-demo-producer --path="./kustomize" --prune=true --interval=5m --export > ./clusters/my-cluster/flex-demo-producer-kustomization.yaml`
 3) Commit and push changes to `flux-demo-infra` repo
 * `git add . && git commit -m "bootstrap flux-demo-producer" && git push`
 4) Verify `gitrepo` for `flux-demo-producer` created in `flux-system` namespace
@@ -132,36 +131,84 @@ Counfluent Cloud resources to be automatically deployed.
     flux-demo-producer          https://github.com/mark-christiansen/flux-demo-producer          True    Fetched revision: main/0ca6156bc8489b69a9206afbb61fb5b5e65e1b65   27s
     flux-system                 https://github.com/mark-christiansen/flux-demo-infra.git         True    Fetched revision: main/e74e798ae5325b6ae1b77140acca130b4dd187ea   74m
   ```
-5) Verify `kustomization` for `flux-demo-ccloud-operator` created
+5) Verify `kustomization` for `flux-demo-producer` created
 * ```
   % flux get kustomizations --watch
-    NAME       	                READY	MESSAGE                                                        	REVISION                                     	SUSPENDED
-    flux-system	                True 	Applied revision: main/d59ad0ede4a7aaf05926c71880c18556f44a16bf	main/d59ad0ede4a7aaf05926c71880c18556f44a16bf	False
-    flux-demo-ccloud-operator	True	Applied revision: main/108c1cbfa7534989de7cced40cc320e4ecdae34e	main/108c1cbfa7534989de7cced40cc320e4ecdae34e	False
-    flux-demo-producer	        True	Applied revision: main/0ca6156bc8489b69a9206afbb61fb5b5e65e1b65	main/0ca6156bc8489b69a9206afbb61fb5b5e65e1b65	False
+    NAME       	            READY	MESSAGE                                                        	REVISION                                     	SUSPENDED
+    flux-system	            True 	Applied revision: main/d59ad0ede4a7aaf05926c71880c18556f44a16bf	main/d59ad0ede4a7aaf05926c71880c18556f44a16bf	False
+    ccloud-operator	        True	Applied revision: main/108c1cbfa7534989de7cced40cc320e4ecdae34e	main/108c1cbfa7534989de7cced40cc320e4ecdae34e	False
+    flux-demo-producer	    True	Applied revision: main/0ca6156bc8489b69a9206afbb61fb5b5e65e1b65	main/0ca6156bc8489b69a9206afbb61fb5b5e65e1b65	False
   ```
-6) Verify `flux-demo-ccloud-operator` pod running
+6) Verify `flux-demo-producer` pod running
 * ```
-  % flux-demo-infra % kubectl -n flux-demo get pod
-    NAME                               READY   STATUS    RESTARTS   AGE
-    ccloud-operator-5b9778c577-x7967   1/1     Running   0          5m39s
+  % flux-demo-infra % kubectl -n default get pod
+    NAME                                  READY   STATUS    RESTARTS   AGE
+    ccloud-operator-5b9778c577-q4zth      1/1     Running   0          5m48s
+    flux-demo-producer-64587bbbf6-d6fjc   1/1     Running   1          49s
   ```
-
-### Push flux-demo-infra Repo Changes
-
-1) Commit and push changes to `flux-demo-infra` repo
-* `git commit -am 'bootstrap flux-demo-producer'`
-* `git push`
-2) Verify that the flux-demo-producer pod is running in the `flux-demo` namespace
-* ```
-  % kubectl -n flux-demo get pod
-  NAME                                 READY   STATUS    RESTARTS   AGE
-  ccloud-operator-5b9778c577-w7w62     1/1     Running   1          7d2h
-  flux-demo-producer-5c5d6fb7b-tlkzz   1/1     Running   0          2s
-  ```
-3) Verify the `flux-demo-producer` is producing messages to its three topics (`source-topic-0`,`source-topic-1`,`source-topic-2`).
-4) After you have verified that `flux-demo-producer` is working, make sure to scale down the deployment so the application doesn't keep producing messages to Confluent Cloud which you will eventually be charged for.
-* `flux-demo-producer % kubectl -n flux-demo scale --replicas=0 deployment flux-demo-producer`
-5) `ccloud-operator` should have created a service account called `flux-demo-producer`. You will not see it in Confluent Cloud unless you look using `ccloud`.
+7) The `ccloud-operator` should have created a service account with api-key. You won't see it in Confluent Cloud. You will have to verify with `ccloud`.
 * `ccloud login` (enter you email and password)
-* 
+* ```
+  % ccloud service-account list
+  Id       |        Name        |          Description
+  +--------+--------------------+--------------------------------+
+  389952   | global             | Global Service Account
+  399327   | flux-demo-producer | Service account for Flux Demo
+  ```
+* ```
+  % flux-demo-infra % ccloud api-key list
+         Key             |          Description           | Owner  |           Owner Email           | Resource Type | Resource ID |       Created
+    +--------------------+--------------------------------+--------+---------------------------------+---------------+-------------+----------------------+
+        AUKBHZPMIJDHA25X | cc.api-key.cloud               | 374465 | mark.christiansen@improving.com | cloud         |             | 2021-11-08T03:55:00Z
+        ULS47SY6HHH3STPR | Created by ccloud-operator Mon | 399327 | <service account>               | kafka         | lkc-1pgrz   | 2021-11-15T04:23:30Z
+                         | Nov 15 04:23:24 UTC 2021 for   |        |                                 |               |             |
+                         | sa:flux-demo-producer          |        |                                 |               |             |
+  ```
+8) The `ccloud-operator` should have also created three topics and ACLs.
+* ```
+  % ccloud kafka topic list
+          Name
+    +----------------+
+      source-topic-0
+      source-topic-1
+      source-topic-2
+  ```
+* ```
+  % ccloud kafka acl list
+    ServiceAccountId | Permission |    Operation     | Resource |      Name      |  Type
+  +------------------+------------+------------------+----------+----------------+---------+
+    User:389952      | ALLOW      | DESCRIBE         | CLUSTER  | kafka-cluster  | LITERAL
+    User:394606      | ALLOW      | DESCRIBE         | CLUSTER  | kafka-cluster  | LITERAL
+    User:389952      | ALLOW      | CLUSTER_ACTION   | CLUSTER  | kafka-cluster  | LITERAL
+    User:389952      | ALLOW      | DESCRIBE_CONFIGS | CLUSTER  | kafka-cluster  | LITERAL
+    User:399327      | ALLOW      | WRITE            | TOPIC    | source-topic-1 | LITERAL
+    User:399327      | ALLOW      | WRITE            | TOPIC    | source-topic-2 | LITERAL
+    User:399327      | ALLOW      | WRITE            | TOPIC    | source-topic-0 | LITERAL
+  ```
+9) Verify the `flux-demo-producer` is producing messages to its three topics in Confluent Cloud.
+10) Scale down the `flux-demo-producer` or it will continue to restart and produce data to your topics.
+* `kubectl -n default scale --replicas=0 deployment flux-demo-producer`
+
+### Cleanup
+
+To cleanup everything deployed in the previous steps follow these instructions.
+
+1) Delete the YAML files in `repo-home/flux-demo-infra/clusters/my-cluster` but not the `flux-system` folder and its contents.
+2) Commit and push the changes to the `flux-demo-infra` repo
+* `git add . && git commit -m "remove ccloud-operator and flux-demo-producer" && git push`
+3) Wait for the deployments and pods to disappear from namespace `default`
+4) Delete these secrets from namespace `default`
+* `cc.api-key.cloud`
+* `cc.api-key.flux-demo-producer.<your-cluster>`
+* `cc.bootstrap-servers.default.devops-demo`
+* `cc.ccloud-secrets`
+* `cc.sasl-jaas-config.flux-demo-producer.default.devops-demo`
+* `cc.schema-registry-url.default`
+5) Remove `flux-system` kustomization
+* `flux delete kustomization flux-system`
+6) Uninstall flux components from Kubernetes
+* `flux uninstall -n flux-system`
+
+### Known Issues
+
+1) The `ccloud-operator` does not seem to be able to startup in a non-`default` namespace. When installed in another namespace you will see Kubernetes authorization errors.
