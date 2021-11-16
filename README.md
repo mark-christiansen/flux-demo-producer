@@ -12,7 +12,7 @@ Counfluent Cloud resources to be automatically deployed.
 
 ### Prerequisites
 
-* A personal [Confluent Cloud](https://www.confluent.io/confluent-cloud/tryfree-v1/) account needs to be setup. You can get 650 free credits using the following promo codes: C50INTEG, DEVOPS200, FREETRIAL400.
+* A personal [Confluent Cloud](https://www.confluent.io/confluent-cloud/tryfree-v1/) account needs to be setup. You can get 750 free credits using the following promo codes: C50INTEG, DEVOPS200, FREETRIAL400, CLOUD100.
 * [Docker](https://docs.docker.com/get-docker/) should be setup on your local machine. Make sure there is enough memory and cpu in Docker for running Kubernetes.
 * A Kubernetes cluster should be installed on your local machine. I would suggest installing [Kind](https://kind.sigs.k8s.io/).
 * The [Kubernetes CLI - kubectl](https://kubernetes.io/docs/tasks/tools/) should be installed locally as well.
